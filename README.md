@@ -1,6 +1,6 @@
 # Ghost Bridge
 
-**An MCP bridge between AI coding agents and Mr.Ghosty — Ryan Cotten's Muse agent at [Ghost Developer Studio](https://github.com/your-username).**
+**An MCP bridge between AI coding agents and Mr.Ghosty — Ryan Cotten's Muse agent at [Ghost Developer Studio](https://github.com/littlestjames82-sys).**
 
 Ghost Bridge lets a second agent (Google Antigravity, Cursor, Claude Code, Codex…) work *with* a personal Muse agent instead of next to it: shared studio context, shared per-project working memory ("capsules"), and a real, governed task queue with attachments, structured results, and instant wake events — every task an auditable thread, every consequential action gated on Ryan's approval.
 
@@ -13,6 +13,8 @@ Muse has **no public personal-agent API**: there is no endpoint that lets anothe
 1. **Context bridge** — the second agent pulls Ghost Developer Studio's profile, real project statuses, and Ryan's standing rules while it works, from a `context.json` the bridge keeps fresh.
 2. **Hosted relay** — a small server (Netlify Functions + Blobs, or local/Docker) holding the live queue: tasks, notes, capsules, a board, and the context itself. `ghost_handoff` files a real task; Mr.Ghosty is woken by an event watcher (seconds, not sweeps), does the work under Ryan's rules, and posts the result back in the thread.
 3. **Governance is built in** — tasks needing paid spend, a public post/send, or anything destructive are never executed silently: they are parked as `needs-approval` with an explanation, and Ryan answers the hold from either side (`ghost_reply`).
+
+Current release: **v4.4.0** — see the [GitHub releases page](https://github.com/littlestjames82-sys/ghost-bridge/releases) (latest: [v4.4.0](https://github.com/littlestjames82-sys/ghost-bridge/releases/tag/v4.4.0)).
 
 ## What's new in v4.4.0
 
@@ -67,7 +69,7 @@ npx ghost-bridge demo
 From a clone:
 
 ```bash
-git clone https://github.com/your-username/ghost-bridge
+git clone https://github.com/littlestjames82-sys/ghost-bridge
 cd ghost-bridge
 npm test        # both suites — MCP 122 checks, relay 192 checks
 npm run demo    # self-proving end-to-end demo
@@ -108,7 +110,7 @@ The same 17 tools are served two ways: by the local MCP server (`mcp/server.js`,
 
 **Netlify (persistent, recommended):**
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/your-username/ghost-bridge)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/littlestjames82-sys/ghost-bridge)
 
 Deploy the `relay/` directory as the site base. Set env vars `BRIDGE_SETUP_SECRET` (your bootstrap secret) and, for durable Blobs access, `BRIDGE_BLOBS_SITE_ID` + `BRIDGE_BLOBS_TOKEN` from *your own* Netlify account. Then register your first key with `POST /setup`.
 
@@ -339,6 +341,19 @@ ghost-bridge/
 ## Security
 
 Keys are bearer credentials — treat them like passwords: one per machine, revoke freely, never commit them (or a filled-in `context.json`) to a repo. The shipped `context.example.json` is a blank template on purpose; Ryan's real context, relay, and keys are **not** in this repository and never leave his private instance. See [SECURITY.md](SECURITY.md).
+
+## From Ghost Developer Studio
+
+Ghost Bridge is one part of the studio's agent-infrastructure family:
+
+- **Visual roadmap board** — where every studio product stands, in one picture: [ghost-roadmaps](https://github.com/littlestjames82-sys/ghost-roadmaps)
+- **GhostGuard** — the governance layer for autonomous systems: [ghostguard](https://github.com/littlestjames82-sys/ghostguard)
+- **GhostBus** — agent-to-agent message bus and shared workspace, exposed as an MCP server: [ghostbus](https://github.com/littlestjames82-sys/ghostbus)
+- **Ghost Hands** — governed, recorded, replayable agent hands for the web: [ghost-hands](https://github.com/littlestjames82-sys/ghost-hands)
+- **Agent Seatbelt** — deterministic guardrails that gate what an AI coding agent does before it does it: [agent-seatbelt](https://github.com/littlestjames82-sys/agent-seatbelt)
+- **Ghost Developer Studio storefront** — [storefront](https://github.com/littlestjames82-sys/storefront)
+
+Built in public by Ryan Cotten / Ghost Developer Studio.
 
 ## License
 
