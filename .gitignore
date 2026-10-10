@@ -1,0 +1,22 @@
+node_modules/
+.netlify/
+
+# Secrets and machine-local state — never commit these.
+.ghost-bridge/
+.setup-secret
+credentials
+.env
+*.key
+
+# Your REAL context is private. Only the template is public.
+mcp/context.json
+context.json
+
+# Local handoffs, test state, store files
+handoffs/
+*.store.json
+store.json
+
+# OS/editor noise
+.DS_Store
+*.log

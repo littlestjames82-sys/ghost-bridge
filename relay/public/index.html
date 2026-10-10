@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghost Bridge Relay — Ghost Developer Studio</title>
+<style>
+  :root { --violet: #6716f3; --violet-soft: #b7aef5; --bg: #0e0e12; --card: #17171f; --line: #2a2a38; --ink: #e8e6f0; --muted: #8f8fa3; --bad: #ff8a8a; --good: #7be2a8; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; margin: 0 auto; max-width: 1180px; padding: 1.5rem 1rem 3rem; background: var(--bg); color: var(--ink); }
+  header { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; }
+  h1 { font-size: 1.45rem; margin: 0; } h1 .accent { color: var(--violet-soft); }
+  h2 { font-size: 1rem; margin: 0 0 .6rem; color: var(--violet-soft); }
+  .muted { color: var(--muted); } .err { color: var(--bad); } .ok { color: var(--good); }
+  .dot { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; background: var(--muted); vertical-align: middle; }
+  .dot.live { background: var(--good); } .dot.poll { background: #e8c87b; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; margin-top: 1rem; }
+  input, select { background: #101018; color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: .5rem .7rem; }
+  input.key { width: min(480px, 70%); }
+  button { background: var(--violet); color: #fff; border: 0; border-radius: 6px; padding: .5rem 1rem; cursor: pointer; }
+  button.ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); padding: .3rem .6rem; font-size: .85rem; }
+  button.danger { background: transparent; border: 1px solid #5a2a2a; color: var(--bad); padding: .3rem .6rem; font-size: .85rem; }
+  code { background: #101018; padding: .1rem .35rem; border-radius: 4px; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1rem; }
+  .task { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: .6rem .7rem; margin-bottom: .6rem; cursor: pointer; }
+  .task:hover { border-color: var(--violet); }
+  #detail { border-color: var(--violet); }
+  #detail pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #101018; border: 1px solid var(--line); border-radius: 8px; padding: .7rem; margin: .4rem 0; font-size: .88rem; }
+  #detail textarea { width: 100%; min-height: 4.5rem; background: #101018; color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: .5rem .7rem; font: inherit; }
+  .comment { border-left: 3px solid var(--violet); padding: .2rem 0 .2rem .7rem; margin: .6rem 0; }
+  .comment .who { color: var(--muted); font-size: .82rem; }
+  .comment .cbody { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: .15rem; }
+  .task .t { font-weight: 600; overflow-wrap: anywhere; }
+  .task .meta { color: var(--muted); font-size: .82rem; margin-top: .25rem; }
+  .task.urgent { border-color: #6b4a12; }
+  .badge { display: inline-block; font-size: .72rem; border: 1px solid var(--line); border-radius: 999px; padding: .05rem .5rem; margin-left: .35rem; color: var(--violet-soft); }
+  .badge.ro { color: #e8c87b; } .badge.full { color: var(--good); }
+  .badge.overdue { color: #fff; background: #8c2f2f; border-color: #8c2f2f; font-weight: 700; }
+  .badge-sched { color: #e8c87b; border-color: #6b4a12; }
+  .badge.blocked { color: #fff; background: #6d28a8; border-color: #6d28a8; font-weight: 700; }
+  #digestBanner { border-color: var(--violet); display: none; }
+  #digestBanner .row { justify-content: space-between; }
+  .agent { display: inline-flex; align-items: center; gap: .45rem; border: 1px solid var(--line); border-radius: 999px; padding: .3rem .8rem .3rem .6rem; margin: 0 .4rem .4rem 0; font-size: .88rem; }
+  .agent .caps { color: var(--muted); font-size: .8rem; }
+  .agentdot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--muted); flex: none; }
+  .agentdot.fresh { background: var(--good); }
+  .agentdot.stale { background: #e8c87b; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: .35rem .4rem; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+  .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+  footer { margin-top: 2rem; color: var(--muted); font-size: .85rem; }
+  #mintedKey { border: 1px dashed var(--violet); border-radius: 8px; padding: .6rem .8rem; margin-top: .7rem; display: none; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<header>
+  <h1>👻 Ghost Bridge <span class="accent">Relay Board</span></h1>
+  <span class="muted">v4.4 — dependencies, digest banner, agents online, live updates</span>
+  <span style="margin-left:auto"><span id="liveDot" class="dot"></span> <span id="liveLabel" class="muted">not connected</span></span>
+</header>
+<p class="muted">The hosted queue between Google Antigravity and Mr.Ghosty (Ghost Developer Studio). Enter your bridge key — it stays in this browser only, never sent anywhere but this relay.</p>
+
+<div class="card">
+  <div class="row">
+    <input id="key" class="key" type="password" placeholder="Bridge key" autocomplete="off">
+    <button id="connect">Connect</button>
+    <button id="disconnect" class="ghost" style="display:none">Disconnect</button>
+    <span id="scopeLabel" class="muted"></span>
+  </div>
+  <p id="msg" class="muted"></p>
+  <p id="stats" class="muted"></p>
+</div>
+
+<div class="card" id="digestBanner">
+  <div class="row">
+    <span id="digestText"></span>
+    <button class="ghost" id="digestDismiss" title="Dismiss until the counts change">Dismiss ✕</button>
+  </div>
+</div>
+
+<div class="card" id="agentsCard" style="display:none">
+  <h2>Agents</h2>
+  <div id="agents"><p class="muted">No agents have checked in yet. Agents appear here when a bridge client heartbeats — the Ghost Bridge MCP does it automatically on status and handoff calls.</p></div>
+  <p class="muted" style="margin:.4rem 0 0">Presence is per bridge key: a bright dot means the agent was seen in the last couple of minutes; amber means it is inside the presence window but going quiet. Presence shows names and capabilities only — never key material.</p>
+</div>
+
+<div class="cols" id="board" style="display:none">
+  <section><h2>Queued</h2><div id="col-queued"></div></section>
+  <section><h2>Working</h2><div id="col-working"></div></section>
+  <section><h2>Waiting on owner</h2><div id="col-waiting"></div></section>
+  <section><h2>Done</h2><div id="col-done"></div></section>
+</div>
+
+<div class="card" id="detail" style="display:none">
+  <div class="row" style="justify-content:space-between">
+    <h2 id="detailTitle" style="margin:0">Task</h2>
+    <button class="ghost" id="detailClose">Close ✕</button>
+  </div>
+  <p id="detailMeta" class="muted"></p>
+  <h2>Task</h2>
+  <pre id="detailBody"></pre>
+  <div id="detailAttachments"></div>
+  <div id="detailResult"></div>
+  <h2>Thread</h2>
+  <div id="detailThread"></div>
+  <div id="detailActions" style="margin-top:1rem">
+    <div class="row">
+      <button id="detailApprove" style="display:none">Approve — clear the hold</button>
+      <button id="detailCancel" class="danger">Cancel task</button>
+    </div>
+    <p style="margin:.8rem 0 .3rem"><label for="detailReply">Reply on this task</label></p>
+    <textarea id="detailReply" placeholder="Your reply — posted to the task thread. If the task is waiting on approval, replying also clears the hold and re-queues it."></textarea>
+    <div class="row" style="margin-top:.5rem"><button id="detailSend">Post reply</button></div>
+  </div>
+  <p id="detailRoNote" class="muted" style="display:none">Read-only key — you can read the full thread, but reply / approve / cancel need a full-scope key. That's why the actions are hidden.</p>
+  <p id="detailMsg" class="muted"></p>
+</div>
+
+<div class="card" id="keysCard" style="display:none">
+  <h2>Bridge keys</h2>
+  <p class="muted">One key per machine/client. <b>full</b> keys can work the queue and manage keys; <b>readonly</b> keys can only look. Revoking one key never touches the others; the last key can't be revoked here (use the reset flow).</p>
+  <table><thead><tr><th>Name</th><th>Scope</th><th>Created</th><th>Last used</th><th></th></tr></thead><tbody id="keysBody"></tbody></table>
+  <div class="row" style="margin-top:.8rem">
+    <input id="newKeyName" placeholder="new key name (e.g. cursor-laptop)">
+    <select id="newKeyScope"><option value="full">full</option><option value="readonly">readonly</option></select>
+    <input id="newKeyValue" placeholder="key value (blank = generate)">
+    <button id="mint">Mint key</button>
+  </div>
+  <div id="mintedKey"></div>
+  <p id="keysMsg" class="muted"></p>
+</div>
+
+<footer>Ghost Bridge · Ghost Developer Studio · Keys are bearer credentials — one per machine, revoke freely.</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let KEY = '', SCOPE = null, lastSeq = 0, connected = false, pollAbort = false, refreshTimer = null;
+let OPEN_ID = null; const TASKS = new Map();
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { 'x-bridge-key': KEY, 'Content-Type': 'application/json', ...(opts.headers || {}) } });
+  const data = await res.json().catch(() => ({}));
+  return { status: res.status, data };
+}
+function fmtTime(iso) { if (!iso) return '—'; const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleString(); }
+function leaseText(t) {
+  if (!t.claimedBy) return '';
+  let left = '';
+  if (t.claimExpiresAt) {
+    const ms = new Date(t.claimExpiresAt) - Date.now();
+    left = ms <= 0 ? ' · lease expired' : ` · lease <span class="countdown" data-exp="${esc(t.claimExpiresAt)}"></span> left`;
+  }
+  return `claimed by <b>${esc(t.claimedBy)}</b>${left}`;
+}
+function schedFlags(t) {
+  // The relay computes these on every read; fall back to the raw dates so
+  // the board still badges correctly against an older relay.
+  const overdue = t.overdue !== undefined ? t.overdue : (t.status === 'queued' && !!t.dueAt && new Date(t.dueAt) < new Date());
+  const scheduled = t.scheduled !== undefined ? t.scheduled : (t.status === 'queued' && !!t.notBefore && new Date(t.notBefore) > new Date());
+  return { overdue, scheduled };
+}
+function depFlags(t) {
+  // Dependencies (v4.4): the relay computes blocked + blockedByUnfinished
+  // on every read. Fallback for older relays: resolve against the tasks
+  // this board has loaded (a blocker that is done/cancelled/archived
+  // satisfies; anything else — including one we cannot see — blocks).
+  if (typeof t.blocked === 'boolean') return { blocked: t.blocked, unfinished: t.blockedByUnfinished || [] };
+  const blockers = Array.isArray(t.blockedBy) ? t.blockedBy : [];
+  if (!blockers.length || ['done', 'cancelled'].includes(t.status)) return { blocked: false, unfinished: [] };
+  const unfinished = blockers.filter(id => { const b = TASKS.get(id); return !(b && (b.archived || ['done', 'cancelled'].includes(b.status))); });
+  return { blocked: unfinished.length > 0, unfinished };
+}
+function taskHtml(t) {
+  const att = (t.attachments && t.attachments.length) ? ` <span title="${t.attachments.length} attachment(s)">📎 ${t.attachments.length}</span>` : '';
+  const urg = t.priority === 'urgent' ? '<span class="badge ro">urgent</span>' : '';
+  const f = schedFlags(t);
+  const od = f.overdue ? '<span class="badge overdue">OVERDUE</span>' : '';
+  const sc = f.scheduled ? '<span class="badge badge-sched">scheduled</span>' : '';
+  const dep = depFlags(t);
+  const bl = dep.blocked ? `<span class="badge blocked" title="Cannot be claimed until ${dep.unfinished.map(i => '#' + i).join(', ')} finish">⛓ BLOCKED by ${dep.unfinished.map(i => '#' + i).join(', ')}</span>` : '';
+  const schedMeta = [
+    t.dueAt ? `due ${fmtTime(t.dueAt)}` : '',
+    f.scheduled ? `not before ${fmtTime(t.notBefore)} — pickup should skip until then` : ''
+  ].filter(Boolean).join(' · ');
+  const claim = t.status === 'in-progress' ? `<div class="meta">${leaseText(t) || 'in progress'}</div>` : '';
+  const result = t.result && t.result.summary ? `<div class="meta">Result: ${esc(t.result.summary)}</div>` : '';
+  return `<div class="task${t.priority === 'urgent' ? ' urgent' : ''}" data-open="${t.id}" title="Click for the full thread"><div class="t">#${t.id} ${esc(t.title)}${att}${urg}${od}${sc}${bl}</div><div class="meta">${esc(t.project || 'no project')} · filed ${fmtTime(t.createdAt)}${t.status === 'cancelled' ? ' · cancelled' : ''}${schedMeta ? ' · ' + esc(schedMeta) : ''}</div>${claim}${result}</div>`;
+}
+function fill(colId, items) {
+  $(colId).innerHTML = items.length ? items.map(taskHtml).join('') : '<p class="muted">(none)</p>';
+}
+async function loadBoard() {
+  const r = await api('/api/tasks?state=all&type=task&limit=100');
+  if (r.status === 401) { $('msg').innerHTML = '<span class="err">That key was rejected.</span>'; stopLive(); return; }
+  if (r.status === 429) { $('msg').innerHTML = '<span class="err">Rate limited by the relay — backing off.</span>'; return; }
+  const tasks = r.data.tasks || [];
+  TASKS.clear(); for (const t of tasks) TASKS.set(t.id, t);
+  fill('col-queued', tasks.filter(t => t.status === 'queued'));
+  fill('col-working', tasks.filter(t => t.status === 'in-progress'));
+  fill('col-waiting', tasks.filter(t => t.status === 'needs-approval'));
+  fill('col-done', tasks.filter(t => ['done', 'cancelled'].includes(t.status)));
+  document.querySelectorAll('[data-open]').forEach(el => el.onclick = () => openTask(Number(el.dataset.open)));
+  $('board').style.display = '';
+  tickCountdowns();
+  // Keep an open drawer fresh on live updates — unless the owner is typing.
+  if (OPEN_ID !== null && TASKS.has(OPEN_ID) && document.activeElement !== $('detailReply') && !$('detailReply').value) renderDetail(TASKS.get(OPEN_ID));
+}
+
+// ----- task detail drawer + owner actions (v4.2) -----
+function resultHtml(r) {
+  if (!r) return '';
+  return `<h2>Structured result</h2><pre>Status: ${esc(r.status)}\nSummary: ${esc(r.summary || '(none)')}${(r.files || []).length ? `\nFiles: ${esc(r.files.join(', '))}` : ''}</pre>`;
+}
+function renderDetail(t) {
+  $('detailTitle').textContent = `#${t.id} ${t.title}`;
+  const lease = t.claimedBy ? ` · claimed by <b>${esc(t.claimedBy)}</b>${t.claimExpiresAt ? ` (lease <span class="countdown" data-exp="${esc(t.claimExpiresAt)}"></span> left, expires ${fmtTime(t.claimExpiresAt)})` : ''}` : '';
+  const df = schedFlags(t);
+  const sched = `${t.dueAt ? ` · due ${fmtTime(t.dueAt)}${df.overdue ? ' (<b>OVERDUE</b>)' : ''}` : ''}${t.notBefore ? ` · scheduled — not before ${fmtTime(t.notBefore)} (pickup workers should skip it until then)` : ''}${t.archived ? ` · archived ${fmtTime(t.archivedAt)}` : ''}`;
+  const dep = depFlags(t);
+  const depMeta = Array.isArray(t.blockedBy) && t.blockedBy.length ? ` · blocked by ${t.blockedBy.map(i => '#' + i).join(', ')}${dep.blocked ? ` — still waiting on ${dep.unfinished.map(i => '#' + i).join(', ')}; it cannot be claimed until they finish` : ' (all finished — ready to claim)'}` : '';
+  $('detailMeta').innerHTML = `${esc(t.status)}${t.priority === 'urgent' ? ' · URGENT' : ''} · ${esc(t.project || 'no project')} · filed by ${esc(t.createdBy || 'unknown key')} · created ${fmtTime(t.createdAt)} · updated ${fmtTime(t.updatedAt)}${sched}${depMeta}${lease}`;
+  $('detailBody').textContent = t.body || '(no body)';
+  const atts = t.attachments || [];
+  $('detailAttachments').innerHTML = atts.length
+    ? `<h2>Attachments (${atts.length})</h2>` + atts.map(a => `<div class="meta" style="margin:.25rem 0">📎 <b>${esc(a.name)}</b> · ${esc(a.mime || 'application/octet-stream')}${a.size !== undefined ? ` · ${a.size} bytes` : ''}${a.path ? ` · relay file: <code>${esc(a.path)}</code>` : ''}${a.dataBase64 ? ' · inline data attached' : ''}</div>`).join('')
+    : '';
+  $('detailResult').innerHTML = resultHtml(t.result);
+  const cs = t.comments || [];
+  $('detailThread').innerHTML = cs.length ? cs.map(c => `<div class="comment"><div class="who">@${esc(c.author)} · ${fmtTime(c.at)}</div><div class="cbody">${esc(c.body)}</div>${c.result ? `<div class="meta">Structured result: status=${esc(c.result.status)}, summary=${esc(c.result.summary || '(none)')}${(c.result.files || []).length ? `, files=${esc(c.result.files.join(', '))}` : ''}</div>` : ''}</div>`).join('') : '<p class="muted">No comments yet.</p>';
+  const full = SCOPE === 'full';
+  const terminal = ['done', 'cancelled'].includes(t.status);
+  $('detailActions').style.display = full ? '' : 'none';
+  $('detailRoNote').style.display = full ? 'none' : '';
+  $('detailApprove').style.display = full && t.status === 'needs-approval' ? '' : 'none';
+  $('detailCancel').style.display = full && !terminal ? '' : 'none';
+  $('detail').style.display = '';
+  tickCountdowns();
+}
+async function openTask(id) {
+  OPEN_ID = id;
+  $('detailMsg').textContent = 'Loading thread…';
+  $('detail').style.display = '';
+  const r = await api(`/api/tasks/${id}`);
+  if (r.status !== 200) { $('detailMsg').textContent = 'Could not load that task: ' + (r.data.error || r.status); return; }
+  TASKS.set(id, r.data);
+  $('detailMsg').textContent = '';
+  renderDetail(r.data);
+}
+async function afterAction() { await loadBoard(); if (OPEN_ID !== null) { const r = await api(`/api/tasks/${OPEN_ID}`); if (r.status === 200) { TASKS.set(OPEN_ID, r.data); renderDetail(r.data); } } }
+// Reply reuses the exact ghost_reply semantics via the existing REST
+// endpoints: comment on the thread, and if the task was needs-approval the
+// hold clears and the task returns to queued.
+async function postReply(message) {
+  const t = TASKS.get(OPEN_ID);
+  const c = await api(`/api/tasks/${OPEN_ID}/comments`, { method: 'POST', body: JSON.stringify({ body: `Reply from Ryan (via the board):\n\n${message}`, author: 'ryan-via-board' }) });
+  if (c.status !== 201) throw new Error(c.data.error || ('HTTP ' + c.status));
+  if (t && t.status === 'needs-approval') {
+    const p = await api(`/api/tasks/${OPEN_ID}`, { method: 'PATCH', body: JSON.stringify({ status: 'queued' }) });
+    if (p.status !== 200) throw new Error(p.data.error || ('HTTP ' + p.status));
+  }
+}
+$('detailClose').onclick = () => { OPEN_ID = null; $('detail').style.display = 'none'; };
+$('detailSend').onclick = async () => {
+  const msg = $('detailReply').value.trim();
+  if (!msg) { $('detailMsg').textContent = 'Write a reply first.'; return; }
+  try { await postReply(msg); $('detailReply').value = ''; $('detailMsg').textContent = 'Reply posted.'; await afterAction(); }
+  catch (e) { $('detailMsg').textContent = 'Reply failed: ' + e.message; }
+};
+$('detailApprove').onclick = async () => {
+  try { await postReply('Approved from the board — go ahead.'); $('detailMsg').textContent = 'Approved — hold cleared, task re-queued.'; await afterAction(); }
+  catch (e) { $('detailMsg').textContent = 'Approve failed: ' + e.message; }
+};
+$('detailCancel').onclick = async () => {
+  if (!confirm(`Cancel task #${OPEN_ID}? This posts a cancellation note and marks it cancelled.`)) return;
+  try {
+    const c = await api(`/api/tasks/${OPEN_ID}/comments`, { method: 'POST', body: JSON.stringify({ body: 'Cancelled from the board by the owner.', author: 'ryan-via-board' }) });
+    if (c.status !== 201) throw new Error(c.data.error || ('HTTP ' + c.status));
+    const p = await api(`/api/tasks/${OPEN_ID}`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
+    if (p.status !== 200) throw new Error(p.data.error || ('HTTP ' + p.status));
+    $('detailMsg').textContent = 'Task cancelled.';
+    await afterAction();
+  } catch (e) { $('detailMsg').textContent = 'Cancel failed: ' + e.message; }
+};
+// ----- digest banner (v4.4): waiting-on-owner + overdue, dismissible -----
+let lastDigestKey = null, digestDismissedKey = null;
+async function loadDigest() {
+  try {
+    const r = await api('/api/digest?hours=24');
+    if (r.status !== 200 || !r.data || !r.data.counts) { $('digestBanner').style.display = 'none'; return; }
+    const waiting = (r.data.waitingOnOwner || []).length;
+    const overdue = (r.data.overdue || []).length;
+    lastDigestKey = waiting + '/' + overdue;
+    if ((waiting > 0 || overdue > 0) && digestDismissedKey !== lastDigestKey) {
+      $('digestText').innerHTML = `<b>Digest (24h):</b> ${waiting ? `⏳ <b>${waiting}</b> task(s) waiting on you` : ''}${waiting && overdue ? ' · ' : ''}${overdue ? `⚠ <b>${overdue}</b> overdue` : ''} <span class="muted">— the full digest is at GET /api/digest (add ?format=md for Markdown)</span>`;
+      $('digestBanner').style.display = '';
+    } else $('digestBanner').style.display = 'none';
+  } catch { /* digest is best-effort */ }
+}
+$('digestDismiss').onclick = () => { digestDismissedKey = lastDigestKey; $('digestBanner').style.display = 'none'; };
+async function loadStats() {
+  try {
+    const res = await fetch('/health'); const h = await res.json();
+    if (h && h.byStatus) $('stats').textContent = `Relay v${h.version} · ${h.keys} key(s) · ${h.events} event(s) in log · queued ${h.byStatus.queued} · working ${h.byStatus['in-progress']} · waiting ${h.byStatus['needs-approval']} · done ${h.byStatus.done}${h.overdue ? ` · ⚠ ${h.overdue} overdue` : ''}${h.archived ? ` · ${h.archived} archived` : ''}`;
+  } catch { /* stats are best-effort */ }
+}
+// ----- agent presence strip (v4.3) -----
+async function loadAgents() {
+  try {
+    const r = await api('/api/presence');
+    if (r.status !== 200) { $('agentsCard').style.display = 'none'; return; }
+    const agents = r.data.agents || [];
+    $('agentsCard').style.display = '';
+    if (!agents.length) { $('agents').innerHTML = '<p class="muted" style="margin:0">No agents seen in the presence window right now.</p>'; return; }
+    $('agents').innerHTML = agents.map(a => {
+      const ageMs = Date.now() - new Date(a.lastSeen).getTime();
+      const fresh = ageMs < 2 * 60000;
+      const age = ageMs < 60000 ? 'just now' : ageMs < 3600000 ? `${Math.floor(ageMs / 60000)}m ago` : `${Math.floor(ageMs / 3600000)}h ago`;
+      const caps = (a.capabilities || []).length ? ` <span class="caps">${esc(a.capabilities.join(' · '))}</span>` : '';
+      return `<span class="agent"><span class="agentdot ${fresh ? 'fresh' : 'stale'}"></span><b>${esc(a.displayName || a.name)}</b>${a.displayName ? `<span class="caps">(${esc(a.name)})</span>` : ''}<span class="caps">${esc(a.status || 'online')} · seen ${age}</span>${caps}</span>`;
+    }).join('');
+  } catch { /* presence is best-effort */ }
+}
+async function loadKeys() {
+  const r = await api('/api/keys');
+  if (r.status !== 200) { $('keysCard').style.display = 'none'; SCOPE = 'readonly'; $('scopeLabel').textContent = 'read-only key — board is view-only'; return; }
+  SCOPE = 'full'; $('scopeLabel').textContent = 'full-scope key';
+  $('keysBody').innerHTML = (r.data.keys || []).map(k => `<tr><td>${esc(k.name)}</td><td><span class="badge ${k.scope === 'readonly' ? 'ro' : 'full'}">${esc(k.scope || 'full')}</span></td><td>${fmtTime(k.createdAt)}</td><td>${fmtTime(k.lastUsedAt)}</td><td><button class="danger" data-revoke="${esc(k.name)}">revoke</button></td></tr>`).join('');
+  document.querySelectorAll('[data-revoke]').forEach(b => b.onclick = async () => {
+    if (!confirm(`Revoke key "${b.dataset.revoke}"? Clients using it stop working immediately.`)) return;
+    const rr = await api('/api/keys/' + encodeURIComponent(b.dataset.revoke), { method: 'DELETE' });
+    $('keysMsg').textContent = rr.status === 200 ? `Revoked ${b.dataset.revoke}.` : ('Revoke failed: ' + (rr.data.error || rr.status));
+    loadKeys();
+  });
+  $('keysCard').style.display = '';
+}
+$('mint').onclick = async () => {
+  const name = $('newKeyName').value.trim();
+  if (!name) { $('keysMsg').textContent = 'Give the new key a name first.'; return; }
+  const body = { name, scope: $('newKeyScope').value };
+  const val = $('newKeyValue').value.trim(); if (val) body.key = val;
+  const r = await api('/api/keys', { method: 'POST', body: JSON.stringify(body) });
+  if (r.status === 201) {
+    $('keysMsg').textContent = `Key "${name}" minted (${body.scope}).`;
+    if (r.data.key) { const box = $('mintedKey'); box.style.display = ''; box.innerHTML = `Generated key for <b>${esc(name)}</b> — shown ONCE, save it now:<br><code>${esc(r.data.key)}</code>`; }
+    $('newKeyName').value = ''; $('newKeyValue').value = '';
+    loadKeys();
+  } else $('keysMsg').textContent = 'Mint failed: ' + (r.data.error || r.status);
+};
+
+// ----- live updates: events long-poll, periodic refresh as fallback -----
+function setLive(mode, label) { $('liveDot').className = 'dot ' + mode; $('liveLabel').textContent = label; }
+function tickCountdowns() {
+  document.querySelectorAll('.countdown').forEach(el => {
+    const ms = new Date(el.dataset.exp) - Date.now();
+    if (ms <= 0) { el.textContent = '0m 00s (expired)'; return; }
+    const s = Math.floor(ms / 1000); el.textContent = `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, '0')}s`;
+  });
+}
+setInterval(tickCountdowns, 1000);
+async function liveLoop() {
+  try {
+    const head = await api('/api/events?since=0');
+    if (head.status === 200) lastSeq = head.data.lastSeq || 0;
+  } catch { /* start from 0 */ }
+  while (!pollAbort) {
+    try {
+      const r = await api(`/api/events?since=${lastSeq}&wait=20`);
+      if (r.status !== 200) throw new Error('events ' + r.status);
+      setLive('live', 'live — event stream connected');
+      const evs = r.data.events || [];
+      if (evs.length) { lastSeq = Math.max(lastSeq, ...evs.map(e => e.seq)); await loadBoard(); await loadStats(); await loadAgents(); await loadDigest(); if (SCOPE === 'full') loadKeys(); }
+    } catch {
+      if (pollAbort) break;
+      setLive('poll', 'long-poll unavailable — refreshing periodically');
+      await new Promise(r => setTimeout(r, 15000));
+      if (!pollAbort) { await loadBoard(); await loadStats(); await loadAgents(); }
+    }
+  }
+}
+function stopLive() { pollAbort = true; if (refreshTimer) clearInterval(refreshTimer); setLive('', 'not connected'); }
+
+async function connect() {
+  KEY = $('key').value.trim();
+  if (!KEY) { $('msg').textContent = 'Enter your bridge key first.'; return; }
+  localStorage.setItem('gb-key', KEY);
+  $('msg').textContent = 'Loading…';
+  const probe = await api('/api/tasks?state=all&limit=1');
+  if (probe.status === 401) { $('msg').innerHTML = '<span class="err">That key was rejected.</span> If the relay has no key yet, register yours from the ghost-bridge folder: <code>node setup.mjs --relay</code>.'; return; }
+  if (probe.status === 403) { $('msg').innerHTML = '<span class="err">Key recognized but not allowed to read tasks.</span>'; return; }
+  connected = true; pollAbort = false;
+  $('msg').textContent = ''; $('disconnect').style.display = '';
+  await loadBoard(); await loadStats(); await loadAgents(); await loadDigest(); await loadKeys();
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => { if (connected) loadAgents(); }, 30000);
+  liveLoop();
+}
+$('connect').onclick = connect;
+$('disconnect').onclick = () => { stopLive(); connected = false; KEY = ''; OPEN_ID = null; localStorage.removeItem('gb-key'); $('board').style.display = 'none'; $('detail').style.display = 'none'; $('agentsCard').style.display = 'none'; $('digestBanner').style.display = 'none'; $('keysCard').style.display = 'none'; $('disconnect').style.display = 'none'; $('scopeLabel').textContent = ''; $('stats').textContent = ''; };
+const saved = localStorage.getItem('gb-key');
+if (saved) { $('key').value = saved; connect(); }
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "bin": {
+    "ghost-bridge": "server.js"
+  },
+  "description": "Ghost Bridge MCP \u2014 gives Google Antigravity (or any MCP client) Ghost Developer Studio context from Mr.Ghosty, Ryan Cotten's Muse agent.",
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "main": "server.js",
+  "name": "ghost-bridge-mcp",
+  "private": false,
+  "scripts": {
+    "http": "node server.js --http --port 8767",
+    "start": "node server.js",
+    "test": "node test.mjs"
+  },
+  "version": "4.4.0",
+  "author": "Ryan Cotten / Ghost Developer Studio"
+}

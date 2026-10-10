@@ -1,0 +1,52 @@
+{
+  "author": "Ryan Cotten / Ghost Developer Studio",
+  "bin": {
+    "ghost-bridge": "bin/ghost-bridge.mjs"
+  },
+  "description": "Ghost Bridge \u2014 an MCP bridge between AI coding agents (Google Antigravity, Cursor, Claude Code, Codex) and Mr.Ghosty, Ryan Cotten's Muse agent at Ghost Developer Studio. Shared context, a governed task queue with attachments and structured results, multi-client keys, and push wake events. Zero runtime dependencies.",
+  "files": [
+    "bin/",
+    "mcp/",
+    "relay/",
+    "scripts/",
+    "docs/",
+    "README.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "LICENSE",
+    "Dockerfile",
+    "docker-compose.yml",
+    "!mcp/context.json",
+    "!**/context.json",
+    "!**/.setup-secret",
+    "!**/.netlify/**"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "antigravity",
+    "agent-bridge",
+    "ghost-developer-studio"
+  ],
+  "license": "MIT",
+  "name": "ghost-bridge",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ghost-bridge"
+  },
+  "scripts": {
+    "demo": "node scripts/demo.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "pack-audit": "node scripts/pack-audit.mjs",
+    "test": "cd mcp && node test.mjs && cd ../relay && node test.mjs",
+    "watch": "node scripts/watch.mjs"
+  },
+  "type": "module",
+  "version": "4.4.0"
+}

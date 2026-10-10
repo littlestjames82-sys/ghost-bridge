@@ -1,0 +1,16 @@
+services:
+  relay:
+    build: .
+    ports:
+      - "8877:8877"
+    environment:
+      # CHANGE THIS before exposing the relay anywhere. It gates the
+      # one-time key registration (POST /setup).
+      BRIDGE_SETUP_SECRET: "change-me-to-a-long-random-string"
+      # Optional: POST every task event to this URL as JSON.
+      # GHOST_BRIDGE_WEBHOOK_URL: "https://example.test/ghost-bridge-hook"
+      GHOST_BRIDGE_STORE_FILE: "/data/store.json"
+    volumes:
+      - ghost-bridge-data:/data
+volumes:
+  ghost-bridge-data:

@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  },
+  "description": "Ghost Bridge hosted relay \u2014 task queue, shared capsules, context, and a hosted MCP endpoint connecting Google Antigravity to Mr.Ghosty.",
+  "name": "ghost-bridge-relay",
+  "private": false,
+  "type": "module",
+  "version": "4.4.0",
+  "license": "MIT",
+  "author": "Ryan Cotten / Ghost Developer Studio",
+  "scripts": {
+    "start": "node local-server.mjs",
+    "test": "node test.mjs"
+  }
+}

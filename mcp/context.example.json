@@ -1,0 +1,15 @@
+{
+  "bridge": "Ghost Bridge MCP — example context. Copy to context.json and fill in YOUR OWN details. Never commit a filled-in context.json to a public repo.",
+  "profile": {
+    "assistant": "Your Agent Name",
+    "owner": "Your Name",
+    "studio": "Your Studio / Team",
+    "studio_contact": "",
+    "how_to_work_with_owner": "Describe how the owner likes to work."
+  },
+  "projects": [
+    { "slug": "example-project", "name": "Example Project", "status": "Example status", "summary": "Example summary." }
+  ],
+  "rules": ["Example rule: no paid spend without the owner's explicit approval."],
+  "updated": "example"
+}

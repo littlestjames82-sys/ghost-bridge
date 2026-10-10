@@ -1,0 +1,1 @@
+{"mcpServers":{"ghost-bridge":{"args":["REPLACE_WITH_PATH/ghost-bridge-mcp/server.js"],"command":"node","env":{"GHOST_QUEUE_REPO":"your-username/your-queue-repo","GITHUB_TOKEN":"PASTE_YOUR_GITHUB_TOKEN_HERE"}}}}

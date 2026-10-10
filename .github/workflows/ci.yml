@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-mcp:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["18", "20", "22"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: MCP test suite (zero-dependency, no install step)
+        run: cd mcp && node test.mjs
+
+  test-relay:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["18", "20", "22"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Relay test suite (local server needs no npm install)
+        run: cd relay && node test.mjs
+
+  pack-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Pack audit — npm tarball carries no private data or secret files, and all essentials
+        run: node scripts/pack-audit.mjs
+
+  privacy-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if private data markers appear in the tree
+        run: |
+          # Patterns are concatenated so this file does not match itself.
+          PAT='215-''9386|408-''2150|321-''3724|Powers ''Loop|gdev''6145|ghost''malone|gregarious-''entremet|615945467''50800|storefront-''ghost-dev|littlest''james'
+          if grep -RInE "$PAT" --exclude-dir=.git --exclude-dir=.github . ; then
+            echo "::error::Private data marker found in the repository tree."
+            exit 1
+          fi
+          echo "privacy scan clean"
