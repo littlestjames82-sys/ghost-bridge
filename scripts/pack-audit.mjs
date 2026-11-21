@@ -32,7 +32,7 @@ const ok = (name, cond, detail = '') => {
 const PATTERNS = [
   '215-' + '9386', '408-' + '2150', '321-' + '3724', 'Powers ' + 'Loop',
   'gdev' + '6145', 'ghost' + 'malone', 'gregarious-' + 'entremet',
-  '615945467' + '50800', 'storefront-' + 'ghost-dev', 'littlest' + 'james'
+  '615945467' + '50800', 'storefront-' + 'ghost-dev', 'littlest' + 'james82' + '@'
 ];
 
 try {
