@@ -1,4 +1,5 @@
 # Ghost Bridge
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![CI](https://github.com/littlestjames82-sys/ghost-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/littlestjames82-sys/ghost-bridge/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/littlestjames82-sys/ghost-bridge)](https://github.com/littlestjames82-sys/ghost-bridge/releases)
 
 **An MCP bridge between AI coding agents and Mr.Ghosty — Ryan Cotten's Muse agent at [Ghost Developer Studio](https://github.com/littlestjames82-sys).**
 
